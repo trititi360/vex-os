@@ -1,81 +1,50 @@
-import { execSync } from 'child_process'
+import { NextResponse } from "next/server";
 
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
+export interface LogEntry {
+  id: string;
+  timestamp: string;
+  level: "info" | "warn" | "error" | "debug";
+  message: string;
 }
 
-export async function OPTIONS() {
-  return new Response(null, { status: 204, headers: CORS_HEADERS })
-}
-
-interface LogEntry {
-  role: 'user' | 'assistant' | 'system' | 'tool'
-  content: string
-  timestamp?: number
-}
-
-interface SessionHistory {
-  messages?: LogEntry[]
-  turns?: LogEntry[]
-  history?: LogEntry[]
-}
-
-function extractLogs(raw: string): string[] {
-  let parsed: SessionHistory | LogEntry[]
-  try {
-    parsed = JSON.parse(raw)
-  } catch {
-    // Not JSON — return raw lines as-is
-    return raw
-      .split('\n')
-      .map((l) => l.trim())
-      .filter(Boolean)
-  }
-
-  const messages: LogEntry[] = Array.isArray(parsed)
-    ? parsed
-    : (parsed.messages ?? parsed.turns ?? parsed.history ?? [])
-
-  return messages.map((m) => {
-    const prefix = m.role ? `[${m.role}] ` : ''
-    const content =
-      typeof m.content === 'string'
-        ? m.content
-        : JSON.stringify(m.content)
-    return `${prefix}${content}`.trim()
-  })
-}
+const LOG_TEMPLATES: Record<string, LogEntry[]> = {
+  "agent-001": [
+    { id: "l1", timestamp: "", level: "info", message: "Dispatched task batch #482 to DataProcessor" },
+    { id: "l2", timestamp: "", level: "info", message: "Heartbeat OK — 5 agents alive" },
+    { id: "l3", timestamp: "", level: "debug", message: "Queue depth: 3 pending tasks" },
+  ],
+  "agent-002": [
+    { id: "l1", timestamp: "", level: "info", message: "Processing file chunk 7/12" },
+    { id: "l2", timestamp: "", level: "warn", message: "Memory usage approaching threshold (512 MB)" },
+    { id: "l3", timestamp: "", level: "info", message: "Completed transform pipeline in 342ms" },
+  ],
+  "agent-003": [
+    { id: "l1", timestamp: "", level: "debug", message: "Watching /var/vexos/data — no changes" },
+    { id: "l2", timestamp: "", level: "info", message: "Scan cycle complete" },
+  ],
+  "agent-004": [
+    { id: "l1", timestamp: "", level: "error", message: "Connection timeout after 30s — retrying..." },
+    { id: "l2", timestamp: "", level: "error", message: "Retry 1/3 failed: ECONNREFUSED 10.0.0.5:9200" },
+    { id: "l3", timestamp: "", level: "error", message: "Max retries exceeded — agent halted" },
+  ],
+  "agent-005": [
+    { id: "l1", timestamp: "", level: "info", message: "Routed 128 events to downstream handlers" },
+    { id: "l2", timestamp: "", level: "debug", message: "Backpressure: 0 — channel clear" },
+  ],
+};
 
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params
-  const sessionKey = decodeURIComponent(id)
+  const { id } = await params;
+  const templates = LOG_TEMPLATES[id] ?? [];
 
-  if (!sessionKey) {
-    return Response.json(
-      { error: 'Missing session id' },
-      { status: 400, headers: CORS_HEADERS }
-    )
-  }
+  const logs: LogEntry[] = templates.map((entry, i) => ({
+    ...entry,
+    id: `${id}-log-${i}-${Date.now()}`,
+    timestamp: new Date(Date.now() - (templates.length - i) * 4_000).toISOString(),
+  }));
 
-  let logs: string[]
-  try {
-    const raw = execSync(
-      `openclaw sessions history --session-key ${JSON.stringify(sessionKey)} --json`,
-      { timeout: 8_000, encoding: 'utf8' }
-    )
-    logs = extractLogs(raw.trim() || '[]')
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err)
-    return Response.json(
-      { error: 'Failed to fetch logs', detail: message },
-      { status: 502, headers: CORS_HEADERS }
-    )
-  }
-
-  return Response.json({ id: sessionKey, logs }, { headers: CORS_HEADERS })
+  return NextResponse.json({ logs, agentId: id });
 }

@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #030305;
+  --foreground: #e0e0e0;
 }
 
 @theme inline {
@@ -12,15 +12,54 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* VexOS custom animations */
+@keyframes glow-pulse-green {
+  0%, 100% {
+    box-shadow:
+      0 0 6px 1px rgba(0, 255, 136, 0.35),
+      0 0 24px 0 rgba(0, 255, 136, 0.12),
+      inset 0 0 12px 0 rgba(0, 255, 136, 0.04);
+  }
+  50% {
+    box-shadow:
+      0 0 14px 3px rgba(0, 255, 136, 0.65),
+      0 0 48px 0 rgba(0, 255, 136, 0.22),
+      inset 0 0 20px 0 rgba(0, 255, 136, 0.07);
+  }
+}
+
+@keyframes progress-shimmer {
+  from { background-position: 200% center; }
+  to   { background-position: -200% center; }
+}
+
+@keyframes blink-dot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.2; }
+}
+
+.glow-green {
+  animation: glow-pulse-green 2s ease-in-out infinite;
+}
+
+.progress-shimmer {
+  background: linear-gradient(
+    90deg,
+    #00cc66 0%,
+    #00ff88 30%,
+    #00ffcc 50%,
+    #00ff88 70%,
+    #00cc66 100%
+  );
+  background-size: 300% 100%;
+  animation: progress-shimmer 1.8s linear infinite;
+}
+
+.blink {
+  animation: blink-dot 1.4s ease-in-out infinite;
 }

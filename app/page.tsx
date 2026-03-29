@@ -16,6 +16,20 @@ import AgentCard from '@/components/AgentCard';
 import StatusBar from '@/components/StatusBar';
 import { Agent } from '@/types/agent';
 
+// ─── Stable start times (module-level so they survive re-renders/refreshes) ──
+const START_TIMES = {
+  main: new Date(Date.now() - 45 * 60 * 1000),
+  ui: new Date(Date.now() - 23 * 60 * 1000),
+  api: new Date(Date.now() - 2 * 60 * 60 * 1000),
+  polish: new Date(Date.now() - 45 * 60 * 1000),
+};
+
+function calcProgress(startTime: Date, status: string): number {
+  if (status === 'done') return 100;
+  const elapsed = (Date.now() - startTime.getTime()) / 1000;
+  return Math.min(99, Math.floor(elapsed / 3));
+}
+
 // ─── Mock data ───────────────────────────────────────────────────────────────
 
 const MOCK_AGENTS: Agent[] = [
@@ -25,8 +39,8 @@ const MOCK_AGENTS: Agent[] = [
     status: 'running',
     currentTask:
       'Implementing JWT authentication middleware with refresh-token rotation and session management',
-    startTime: new Date(Date.now() - 45 * 60 * 1000),
-    progress: 67,
+    startTime: START_TIMES.main,
+    progress: 0, // calculated dynamically
     logs: [
       '> npm run build -- --filter=@repo/auth',
       '✓ Built auth module in 2.3s',
@@ -43,8 +57,8 @@ const MOCK_AGENTS: Agent[] = [
     status: 'running',
     currentTask:
       'Building responsive dashboard layout with Tailwind CSS v4 and shadcn/ui component system',
-    startTime: new Date(Date.now() - 23 * 60 * 1000),
-    progress: 34,
+    startTime: START_TIMES.ui,
+    progress: 0,
     logs: [
       '> npx shadcn@latest init',
       '✓ Initialized components.json',
@@ -60,7 +74,7 @@ const MOCK_AGENTS: Agent[] = [
     name: 'feature/api',
     status: 'done',
     currentTask: 'REST API endpoints for user management — COMPLETED',
-    startTime: new Date(Date.now() - 2 * 60 * 60 * 1000),
+    startTime: START_TIMES.api,
     progress: 100,
     logs: [
       '> Running endpoint validation suite...',
@@ -78,7 +92,7 @@ const MOCK_AGENTS: Agent[] = [
     name: 'feature/polish',
     status: 'done',
     currentTask: 'UI polish complete — glassmorphism cards, animations, transitions deployed',
-    startTime: new Date(Date.now() - 45 * 60 * 1000),
+    startTime: START_TIMES.polish,
     progress: 100,
     logs: [
       '> npm run build',
@@ -268,6 +282,7 @@ function SystemSidebar({ agents }: { agents: Agent[] }) {
 export default function Home() {
   const [time, setTime] = useState('');
   const [date, setDate] = useState('');
+  const [tick, setTick] = useState(0);
 
   useEffect(() => {
     const tick = () => {
@@ -282,13 +297,22 @@ export default function Home() {
       );
     };
     tick();
-    const id = setInterval(tick, 1000);
+    const id = setInterval(() => { tick(); setTick(t => t + 1); }, 1000);
     return () => clearInterval(id);
   }, []);
 
-  const activeCount = MOCK_AGENTS.filter((a) => a.status === 'running').length;
-  const doneCount = MOCK_AGENTS.filter((a) => a.status === 'done').length;
-  const errorCount = MOCK_AGENTS.filter((a) => a.status === 'error').length;
+  // Recompute progress every tick
+  const agents = MOCK_AGENTS.map(a => ({
+    ...a,
+    progress: a.status === 'running' || a.status === 'error'
+      ? calcProgress(a.startTime, a.status)
+      : a.progress,
+  }));
+  void tick; // ensure re-render on tick
+
+  const activeCount = agents.filter((a) => a.status === 'running').length;
+  const doneCount = agents.filter((a) => a.status === 'done').length;
+  const errorCount = agents.filter((a) => a.status === 'error').length;
 
   return (
     <div className="min-h-screen bg-[#030305] flex flex-col text-[#e0e0e0]">
@@ -392,19 +416,19 @@ export default function Home() {
               AGENT PROCESSES
             </span>
             <span className="text-[10px] font-mono text-[#2a2a3e]">
-              ({MOCK_AGENTS.length} registered)
+              ({agents.length} registered)
             </span>
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
-            {MOCK_AGENTS.map((agent) => (
+            {agents.map((agent) => (
               <AgentCard key={agent.id} agent={agent} />
             ))}
           </div>
         </div>
 
         {/* Sidebar */}
-        <SystemSidebar agents={MOCK_AGENTS} />
+        <SystemSidebar agents={agents} />
       </main>
 
       {/* ── Status bar ──────────────────────────────────────────────────────── */}

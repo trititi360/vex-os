@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import {
   Activity,
   CheckCircle,
   Cpu,
   Database,
   Terminal,
+  Users,
   XCircle,
   Zap,
 } from 'lucide-react';
@@ -345,6 +347,15 @@ export default function Home() {
             </div>
           )}
         </div>
+
+        {/* Nav */}
+        <Link
+          href="/org"
+          className="flex items-center gap-1.5 rounded-full bg-[#00d4ff]/8 border border-[#00d4ff]/20 px-2.5 py-1 hover:bg-[#00d4ff]/15 transition-colors"
+        >
+          <Users className="w-3 h-3 text-[#00d4ff]" />
+          <span className="text-[10px] font-mono text-[#00d4ff] tracking-wider">ORG</span>
+        </Link>
 
         {/* Clock */}
         <div className="ml-auto flex items-center gap-4">

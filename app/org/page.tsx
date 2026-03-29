@@ -1,39 +1,28 @@
-import Link from 'next/link';
-import { Terminal, ChevronRight, Users } from 'lucide-react';
+'use client';
+
+import { useState, useEffect } from 'react';
 import OrgNode from '@/components/OrgNode';
+import { RefreshCw } from 'lucide-react';
 
-// ─── Org data ─────────────────────────────────────────────────────────────────
+interface AgentConfig {
+  id: string;
+  name: string;
+  emoji: string;
+  role?: string;
+  model?: string;
+}
 
-const CEO = {
-  emoji: '👑',
-  name: 'Bogdan Dobritoiu',
-  title: 'Chief Executive Officer',
-  role: 'Human' as const,
-  status: 'online' as const,
-  description: 'The Visionary',
-  accent: '#ffaa00',
+// Accent colors per agent id (fallback to a default)
+const ACCENT_MAP: Record<string, string> = {
+  main: '#00d4ff',
+  gary: '#a855f7',
+  vi: '#00ff88',
 };
+const DEFAULT_ACCENT = '#6b7280';
 
-const COO = {
-  emoji: '⚡',
-  name: 'Vex',
-  title: 'Chief Operating Officer',
-  role: 'AI' as const,
-  status: 'online' as const,
-  description: 'Builds, ships, orchestrates agents',
-  task: 'Currently idle',
-  accent: '#00d4ff',
-};
-
-const CMO = {
-  emoji: '🎯',
-  name: 'Gary',
-  title: 'Chief Marketing Officer',
-  role: 'AI' as const,
-  status: 'online' as const,
-  description: 'Marketing, growth, positioning',
-  accent: '#a855f7',
-};
+function getAccent(id: string) {
+  return ACCENT_MAP[id] ?? DEFAULT_ACCENT;
+}
 
 // ─── Connector ────────────────────────────────────────────────────────────────
 
@@ -44,10 +33,7 @@ function Connector({ from, to }: { from: string; to: string }) {
         className="w-px h-10"
         style={{ background: `linear-gradient(to bottom, ${from}50, ${to}50)` }}
       />
-      <div
-        className="w-1.5 h-1.5 rounded-full"
-        style={{ backgroundColor: `${to}60` }}
-      />
+      <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: `${to}60` }} />
     </div>
   );
 }
@@ -55,8 +41,40 @@ function Connector({ from, to }: { from: string; to: string }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function OrgChartPage() {
+  const [agents, setAgents] = useState<AgentConfig[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/agents');
+      if (!res.ok) throw new Error('Failed to fetch agents');
+      const data = await res.json();
+      setAgents(data.agents ?? []);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { load(); }, []);
+
+  // Bogdan is always the root node (human)
+  const BOGDAN = {
+    emoji: '👑',
+    name: 'Bogdan Dobritoiu',
+    title: 'Chief Executive Officer',
+    role: 'Human' as const,
+    status: 'online' as const,
+    description: 'The Visionary',
+    accent: '#ffaa00',
+  };
+
   return (
-    <div className="min-h-screen bg-[#030305] flex flex-col text-[#e0e0e0]">
+    <div className="min-h-screen bg-[#030305] flex flex-col text-[#e0e0e0] flex-1">
       {/* Scanline overlay */}
       <div
         className="pointer-events-none fixed inset-0 z-50 opacity-[0.018]"
@@ -67,81 +85,85 @@ export default function OrgChartPage() {
         }}
       />
 
-      {/* ── Header ──────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 h-[3.75rem] border-b border-[#111118] bg-[#030305]/95 backdrop-blur-sm flex items-center px-5 gap-5 flex-shrink-0">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-3 select-none group">
-          <div className="relative flex-shrink-0">
-            <Terminal className="w-5 h-5 text-[#00ff88]" />
-            <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#00ff88] blink" />
-          </div>
-          <div>
-            <div className="text-[13px] font-mono font-black text-[#00ff88] tracking-[0.35em] leading-none">
-              VEX OS
-            </div>
-            <div className="text-[9px] font-mono text-[#2a2a3e] tracking-[0.2em] leading-none mt-0.5">
-              AGENT MONITOR
-            </div>
-          </div>
-        </Link>
-
-        <div className="w-px h-7 bg-[#111118]" />
-
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-1.5" aria-label="Breadcrumb">
-          <Link
-            href="/"
-            className="text-[10px] font-mono text-[#374151] hover:text-[#00ff88] tracking-wider transition-colors"
-          >
-            DASHBOARD
-          </Link>
-          <ChevronRight className="w-3 h-3 text-[#2a2a3e]" />
-          <span className="text-[10px] font-mono text-[#00d4ff] tracking-wider flex items-center gap-1">
-            <Users className="w-3 h-3" />
-            ORG CHART
-          </span>
-        </nav>
-      </header>
-
-      {/* ── Main ────────────────────────────────────────────────────────────── */}
       <main className="flex-1 flex flex-col items-center px-4 py-12">
-        {/* Page title */}
+        {/* Title */}
         <div className="text-center mb-12">
           <div className="text-[10px] font-mono text-[#374151] tracking-[0.3em] uppercase mb-2">
             VexOS · Structure
           </div>
-          <h1 className="text-xl font-mono font-bold text-[#e0e0e0] tracking-[0.15em]">
-            Organization Chart
-          </h1>
+          <div className="flex items-center justify-center gap-3">
+            <h1 className="text-xl font-mono font-bold text-[#e0e0e0] tracking-[0.15em]">
+              Organization Chart
+            </h1>
+            <button
+              onClick={load}
+              disabled={loading}
+              className="flex items-center gap-1.5 px-2 py-1 rounded bg-[#111118] border border-[#1a1a2e] text-[10px] font-mono text-[#374151] hover:text-[#00d4ff] hover:border-[#00d4ff]/30 transition-all"
+            >
+              <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
           <div className="mt-3 mx-auto w-32 h-px bg-gradient-to-r from-transparent via-[#1a1a2e] to-transparent" />
         </div>
 
+        {error && (
+          <div className="mb-8 px-4 py-3 rounded border border-[#ff4444]/30 bg-[#ff4444]/10 text-xs font-mono text-[#ff4444]">
+            {error}
+          </div>
+        )}
+
         {/* Tree */}
-        <div className="flex flex-col items-center">
-          <OrgNode {...CEO} />
-          <Connector from={CEO.accent} to={COO.accent} />
-          <OrgNode {...COO} />
-          <Connector from={COO.accent} to={CMO.accent} />
-          <OrgNode {...CMO} />
-        </div>
+        {loading ? (
+          <div className="flex items-center gap-2 text-[#374151] font-mono text-xs">
+            <RefreshCw className="w-4 h-4 animate-spin" />
+            Loading agents from openclaw.json...
+          </div>
+        ) : (
+          <div className="flex flex-col items-center">
+            {/* Root: Bogdan */}
+            <OrgNode {...BOGDAN} />
+
+            {/* AI Agents from openclaw.json */}
+            {agents.map((agent, i) => {
+              const accent = getAccent(agent.id);
+              const prevAccent = i === 0 ? BOGDAN.accent : getAccent(agents[i - 1].id);
+              return (
+                <div key={agent.id} className="flex flex-col items-center">
+                  <Connector from={prevAccent} to={accent} />
+                  <OrgNode
+                    emoji={agent.emoji}
+                    name={agent.name}
+                    title={`Agent · ${agent.id}`}
+                    role="AI"
+                    status="online"
+                    description={agent.role ?? `AI agent — workspace-${agent.id}`}
+                    task={agent.model ? `Model: ${agent.model.split('/').pop()}` : 'Currently idle'}
+                    accent={accent}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* Legend */}
         <div className="mt-16 flex items-center gap-6">
           {[
             { label: 'Human', color: '#ffaa00' },
             { label: 'AI Agent', color: '#00d4ff' },
-            { label: 'Coming Soon', color: '#374151' },
           ].map(({ label, color }) => (
             <div key={label} className="flex items-center gap-2">
-              <span
-                className="w-2 h-2 rounded-full"
-                style={{ backgroundColor: color }}
-              />
+              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
               <span className="text-[9px] font-mono tracking-widest" style={{ color }}>
                 {label.toUpperCase()}
               </span>
             </div>
           ))}
+          {!loading && (
+            <span className="text-[9px] font-mono text-[#374151] tracking-widest">
+              {agents.length} AGENTS REGISTERED
+            </span>
+          )}
         </div>
       </main>
     </div>

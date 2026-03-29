@@ -1,5 +1,21 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import type { Agent } from "@/app/api/agents/route";
+
+interface AgentFile {
+  name: string;
+  path: string;
+  content: string;
+  lastModified: string;
+}
+
+interface Agent {
+  id: string;
+  name: string;
+  emoji: string;
+  workspace: string;
+  files: AgentFile[];
+  isLoading: boolean;
+  error?: string;
+}
 
 export type ConnectionStatus = "connecting" | "live" | "offline";
 

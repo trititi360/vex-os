@@ -11,6 +11,7 @@
   "dependencies": {
     "lucide-react": "^1.7.0",
     "next": "16.2.1",
+    "next-pwa": "^5.6.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "socket.io-client": "^4.8.3"
@@ -20,9 +21,13 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "concurrently": "^9.2.1",
+    "electron": "^41.1.0",
+    "electron-builder": "^26.8.1",
     "eslint": "^9",
     "eslint-config-next": "16.2.1",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wait-on": "^9.0.4"
   }
 }

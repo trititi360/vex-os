@@ -16,6 +16,15 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "VexOS · Agent Monitor",
   description: "Agent process monitoring dashboard",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "VexOS",
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
 };
 
 export default function RootLayout({
@@ -28,6 +37,10 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <link rel="apple-touch-icon" href="/icon-192.png" />
+        <meta name="theme-color" content="#030305" />
+      </head>
       <body className="min-h-full flex bg-[#030305] text-[#e0e0e0]">
         <Sidebar />
         {children}

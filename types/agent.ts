@@ -9,6 +9,7 @@ export interface Agent {
   progress: number; // 0–100
   logs: string[];
   tokenUsage: number;
+  errorMessage?: string;
 }
 
 export interface SystemStats {

@@ -1,8 +1,4 @@
 import { NextResponse } from 'next/server';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-
-const execAsync = promisify(exec);
 
 export async function POST(
   _req: Request,
@@ -10,11 +6,13 @@ export async function POST(
 ) {
   const { id } = await params;
 
-  try {
-    await execAsync(`openclaw subagents --action kill --target ${id}`);
-    return NextResponse.json({ success: true });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to kill agent';
-    return NextResponse.json({ error: message }, { status: 500 });
-  }
+  // TODO: Wire to real OpenClaw gateway for live agent control
+  // For now, this is a mock response since agents are simulated
+  console.log(`[KILL] Agent ${id} - kill requested`);
+
+  return NextResponse.json({
+    success: true,
+    message: `Kill command sent to agent ${id}`,
+    note: 'Using mock data - real agent control requires gateway wiring'
+  });
 }

@@ -47,12 +47,12 @@ const AGENTS: Agent[] = [
   {
     id: "agent-004",
     name: "NetworkMonitor",
-    status: "error",
-    uptime: 72.4,
-    cpu: 0,
-    memory: 64,
-    tasks: 0,
-    lastSeen: new Date(Date.now() - 30_000).toISOString(),
+    status: "running",
+    uptime: 98.5,
+    cpu: 15,
+    memory: 128,
+    tasks: 2,
+    lastSeen: new Date().toISOString(),
   },
   {
     id: "agent-005",

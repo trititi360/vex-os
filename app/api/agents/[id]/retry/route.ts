@@ -1,8 +1,4 @@
 import { NextResponse } from 'next/server';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-
-const execAsync = promisify(exec);
 
 export async function POST(
   _req: Request,
@@ -10,13 +6,13 @@ export async function POST(
 ) {
   const { id } = await params;
 
-  try {
-    await execAsync(
-      `openclaw agent -m "Please continue where you left off and fix any errors." --session-id ${id}`
-    );
-    return NextResponse.json({ success: true });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to send retry command';
-    return NextResponse.json({ error: message }, { status: 500 });
-  }
+  // TODO: Wire to real OpenClaw gateway for live agent control
+  // For now, this is a mock response since agents are simulated
+  console.log(`[RETRY] Agent ${id} - retry requested`);
+
+  return NextResponse.json({
+    success: true,
+    message: `Retry command sent to agent ${id}`,
+    note: 'Using mock data - real agent control requires gateway wiring'
+  });
 }

@@ -1,8 +1,4 @@
 import { NextResponse } from 'next/server';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-
-const execAsync = promisify(exec);
 
 export async function POST(
   _req: Request,
@@ -10,13 +6,13 @@ export async function POST(
 ) {
   const { id } = await params;
 
-  try {
-    await execAsync(
-      `openclaw agent -m "Agent ${id} encountered an error. Please analyze what went wrong and fix it automatically." --session-id ${id}`
-    );
-    return NextResponse.json({ success: true });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to send fix command';
-    return NextResponse.json({ error: message }, { status: 500 });
-  }
+  // TODO: Wire to real OpenClaw gateway for live agent control
+  // For now, this is a mock response since agents are simulated
+  console.log(`[AUTO-FIX] Agent ${id} - fix requested`);
+
+  return NextResponse.json({
+    success: true,
+    message: `Fix command sent to agent ${id}`,
+    note: 'Using mock data - real agent control requires gateway wiring'
+  });
 }

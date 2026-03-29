@@ -22,6 +22,7 @@ const START_TIMES = {
   ui: new Date(Date.now() - 23 * 60 * 1000),
   api: new Date(Date.now() - 2 * 60 * 60 * 1000),
   polish: new Date(Date.now() - 45 * 60 * 1000),
+  gary: new Date(Date.now() - 5 * 60 * 1000),
 };
 
 function calcProgress(startTime: Date, status: string): number {
@@ -105,6 +106,22 @@ const MOCK_AGENTS: Agent[] = [
       '✓ Deployed to https://snowframe.vercel.app',
     ],
     tokenUsage: 28450,
+  },
+  {
+    id: 'gary',
+    name: '🎯 Gary (CMO)',
+    status: 'idle',
+    currentTask: 'Ready for marketing tasks — say @gary to engage',
+    startTime: START_TIMES.polish,
+    progress: 0,
+    logs: [
+      '> Agent gary initialized',
+      '> Workspace: ~/.openclaw/workspace-gary',
+      '> Model: claude-sonnet-4-6',
+      '> SOUL.md loaded — CMO persona active',
+      '> Waiting for @gary mention...',
+    ],
+    tokenUsage: 19301,
   },
 ];
 

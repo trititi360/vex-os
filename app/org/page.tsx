@@ -30,7 +30,7 @@ const CMO = {
   name: 'Gary',
   title: 'Chief Marketing Officer',
   role: 'AI' as const,
-  status: 'coming-soon' as const,
+  status: 'online' as const,
   description: 'Marketing, growth, positioning',
   accent: '#a855f7',
 };

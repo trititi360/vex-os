@@ -12,7 +12,7 @@ export async function POST(
 
   try {
     await execAsync(
-      `openclaw sessions send --session-key ${id} "Please continue where you left off and fix any errors"`
+      `openclaw agent -m "Please continue where you left off and fix any errors." --session-id ${id}`
     );
     return NextResponse.json({ success: true });
   } catch (err) {

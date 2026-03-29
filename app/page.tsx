@@ -76,18 +76,21 @@ const MOCK_AGENTS: Agent[] = [
   {
     id: '4',
     name: 'feature/polish',
-    status: 'error',
-    currentTask:
-      'TypeScript compilation failed — module resolution error in toast component',
-    startTime: new Date(Date.now() - 15 * 60 * 1000),
-    progress: 42,
+    status: 'done',
+    currentTask: 'UI polish complete — glassmorphism cards, animations, transitions deployed',
+    startTime: new Date(Date.now() - 45 * 60 * 1000),
+    progress: 100,
     logs: [
-      '> tsc --noEmit',
-      '✗ Error TS2307: Cannot find module "@/components/ui/toast"',
-      '✗ Error TS2322: Type "string" is not assignable to type "ButtonVariant"',
-      '> Build failed with 2 errors, 1 warning',
+      '> npm run build',
+      '✓ Compiled successfully in 1824ms',
+      '> Running TypeScript check...',
+      '✓ Finished TypeScript in 1410ms',
+      '> Generating static pages...',
+      '✓ Route (/) prerendered',
+      '> Merging feature/polish → main',
+      '✓ Deployed to https://snowframe.vercel.app',
     ],
-    tokenUsage: 19830,
+    tokenUsage: 28450,
   },
 ];
 
